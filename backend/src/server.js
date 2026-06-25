@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import authRoutes from "./routes/auth.route.js";
 import messageRoutes from "./routes/message.route.js";
 import path from "path";
-import {connectDB} from "./lib/db.js";
+import { connectDB, getDBClient } from "./lib/db.js";
 
 dotenv.config();
 
@@ -27,7 +27,13 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
-app.listen(PORT, () => {
-  console.log("Server running on port: " + PORT);
-  connectDB();
-});
+const startServer = async () => {
+  await connectDB();
+  getDBClient();
+
+  app.listen(PORT, () => {
+    console.log("Server running on port: " + PORT);
+  });
+};
+
+startServer();

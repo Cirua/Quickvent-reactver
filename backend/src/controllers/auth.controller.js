@@ -43,7 +43,15 @@ const user = await User.findOne({ where: { email } });
 const salt = await bcrypt.genSalt(10);
 const hashedPassword = await bcrypt.hash(password, salt);
 
-const newUser = await User.create({ email, password: hashedPassword });
+let newUser;
+try {
+  newUser = await User.create({ email, password: hashedPassword });
+} catch (createError) {
+  if (createError?.code === "500") {
+    return res.status(400).json("Email already exists");
+  }
+  throw createError;
+}
 
 if (newUser){
   generateToken(newUser.id, res);
