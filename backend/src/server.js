@@ -28,12 +28,20 @@ if (process.env.NODE_ENV === "production") {
 }
 
 const startServer = async () => {
-  await connectDB();
-  getDBClient();
+  try {
+    await connectDB();
+    getDBClient();
 
-  app.listen(PORT, () => {
-    console.log("Server running on port: " + PORT);
-  });
+    app.listen(PORT, () => {
+      console.log("Server running on port: " + PORT);
+    });
+  } catch (error) {
+    console.error("Startup failed:", error);
+    process.exit(1);
+  }
 };
 
-startServer();
+startServer().catch((error) => {
+  console.error("", error);
+  process.exit(1);
+});
