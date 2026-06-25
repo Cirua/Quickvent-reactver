@@ -4,6 +4,8 @@ the website*/
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import { generateToken } from "../lib/utils.js";
+import { sendWelcomeEmail } from "../email/emailHandlers.js";
+import "dotenv/config";
 
 export const signup = async (req, res) => {
   const {email, password } = req.body;
@@ -47,7 +49,7 @@ let newUser;
 try {
   newUser = await User.create({ email, password: hashedPassword });
 } catch (createError) {
-  if (createError?.code === "500") {
+  if (createError?.code === "23505") {
     return res.status(400).json("Email already exists");
   }
   throw createError;
@@ -61,7 +63,13 @@ if (newUser){
 else{
     res.status(400).json("Failed to create user");
 }
+try{
+    await sendWelcomeEmail(newUser.email, process.env.CLIENT_URL); // Send welcome email
 
+}catch (emailError) {
+    console.error("Error sending welcome email:", emailError);
+    // You can choose to ignore the email sending error or handle it differently    
+}
 
 } catch (error) {
     return res.status(500).json("Something went wrong");
