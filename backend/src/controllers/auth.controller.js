@@ -67,3 +67,33 @@ else{
     return res.status(500).json("Something went wrong");
   }
 };
+
+export const login = async (req, res) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json("Email and password are required");
+    }
+
+    try{
+        const user = await User.findOne({ where: { email } });
+        if (!user) 
+            return res.status(400).json("Invalid credentials");
+
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid)
+            return res.status(400).json("Invalid credentials");
+
+        generateToken(user.id, res);
+        res.status(200).json({ message: "Login successful", email: user.email });
+    }
+catch (error) {
+    console.error("Login error:", error);
+    return res.status(500).json("Something went wrong");
+}
+};
+
+export const logout = (_, res) => {
+    res.cookie("jwt","", {maxAge: 0});
+    res.status(200).json("Logout successful");
+};
